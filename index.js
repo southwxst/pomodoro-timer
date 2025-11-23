@@ -110,13 +110,6 @@ workTimeInput.addEventListener("input", () => {
 // ボタン動作
 // ===============================
 startBtn.addEventListener("click", () => {
-  // ボタンを押したらアラーム停止
-  alarm.pause();
-  alarm.currentTime = 0;
-
-  // 次のフェーズを開始（ここで inBreak を false にして作業開始）
-  updateDisplayMode();
-
   if (isTimerWorking) return;
   if (isInitialStart) {
     setedNumber = workTime;
@@ -124,51 +117,64 @@ startBtn.addEventListener("click", () => {
     isInitialStart = false;
   }
   Notification.requestPermission();
-  if (setedNumber <= 0) {
-    toBreak();
-  }
-  startTimer();
+  whenTimerEnd(startTimer);
 });
 
 stopBtn.addEventListener("click", () => {
-  clearInterval(t);
-  isTimerWorking = false;
-  if (setedNumber <= 0) {
-    toBreak();
-  }
+  whenTimerEnd(stopTimer);
 });
 
 breakBtn.addEventListener("click", () => {
-  alarm.pause();
-  alarm.currentTime = 0;
-
-  clearInterval(t);
-  isTimerWorking = false;
-
+  stopTimer();
   if (inBreak) {
+    stopTimerIfInBreak();
     // 休憩 → 作業
-    inBreak = false;
-    setedNumber = workTime;
-    updateDisplayMode();
-    document.getElementById("counter").textContent = formatTime(setedNumber);
-    startTimer();
   } else {
     // 作業 → 休憩
     toBreak();
   }
 });
+function whenTimerEnd(functionName) {
+  if (!inBreak && setedNumber <= 0) {
+    isTimerWorking = false;
+    toBreak();
+    return;
+  }
+  if (inBreak && setedNumber <= 0) {
+    isTimerWorking = false;
+    stopTimerIfInBreak();
+    return;
+  } else {
+    functionName();
+  }
+}
+function stopTimer() {
+  alarm.pause();
+  alarm.currentTime = 0;
 
+  clearInterval(t);
+  isTimerWorking = false;
+}
+function stopTimerIfInBreak() {
+  inBreak = false;
+  setedNumber = workTime;
+  updateDisplayMode();
+  document.getElementById("counter").textContent = formatTime(setedNumber);
+  startTimer();
+}
+function toBreak() {
+  inBreak = true;
+  setedNumber = breakTime;
+  alarm.pause();
+  alarm.currentTime = 0;
+  updateDisplayMode();
+  startTimer();
+}
 // ===============================
 // タイマー処理
 // ===============================
 function startTimer() {
   let last = Date.now(); // ← 差分計算用
-
-  if (isTimerWorking) {
-    alert("動いているので待ってください");
-    return;
-  }
-
   if (!hasEverStarted) {
     breakTimeInput.style.display = "none";
     workTimeInput.style.display = "none";
@@ -277,14 +283,7 @@ function sendNotification(message) {
     new Notification(message);
   }
 }
-function toBreak() {
-  inBreak = true;
-  setedNumber = breakTime;
-  alarm.pause();
-  alarm.currentTime = 0;
-  updateDisplayMode();
-  startTimer();
-}
+
 function now() {
   return new Date().toLocaleDateString("ja-JP");
 }
