@@ -179,6 +179,7 @@ function startTimer() {
   t = setInterval(() => {
     setedNumber--;
     document.getElementById("counter").textContent = formatTime(setedNumber);
+    document.title = formatTime(setedNumber);
     if (0 <= setedNumber && !inBreak) {
       localStorage.setItem("totalTime", ++lastTotalTime);
       totalTimeP.textContent = `Totale time : ${formatTime(
