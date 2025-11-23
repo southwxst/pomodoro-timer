@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro timer</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <h1 id="counter">25:00</h1>
+    <button id="startBtn">Start / Resume</button>
+    <button id="stopBtn">Stop</button>
+    <button id="breakBtn">Break</button>
+    <p id="workTime"></p>
+    <p id="breakTime"></p>
+    <p id="totalTimeP">Total time</p>
+    <p id="todayTotalTimeP">h/day</p>
+    <p id="currentStreak">Current streak</p>
+    <p id="longestStreak">Longest streak</p>
+    <p id="dailyAvg">Daily average</p>
+    <div id="contributionGraph"></div>
+    <button id="themeToggle">Toggle theme</button>
+
+    <button id="importBtn">Import settings and history</button>
+    <button id="exportBtn">Export settings and history</button>
+    <br />
+    <input type="number" min="1" step="5" id="workTimeInput" />
+    <input type="number" min="1" step="5" id="breakTimeInput" />
+    <audio src="alarm.mp3" id="alarm"></audio>
+  </body>
+  <script src="index.js"></script>
+</html>
