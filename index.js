@@ -162,61 +162,78 @@ breakBtn.addEventListener("click", () => {
 // タイマー処理
 // ===============================
 function startTimer() {
+  let last = Date.now(); // ← 差分計算用
+
   if (isTimerWorking) {
     alert("動いているので待ってください");
     return;
   }
+
   if (!hasEverStarted) {
     breakTimeInput.style.display = "none";
     workTimeInput.style.display = "none";
     importBtn.style.display = "none";
     exportBtn.style.display = "none";
   }
+
   updateStats();
   document.getElementById("counter").textContent = formatTime(setedNumber);
+
   hasEverStarted = true;
   isTimerWorking = true;
+
   t = setInterval(() => {
-    setedNumber--;
+    const now = Date.now();
+    const diff = Math.floor((now - last) / 1000); // 前回 tick からの経過秒数
+
+    if (diff > 0) {
+      setedNumber -= diff;
+      last = now; // 更新
+    }
+
+    // 表示更新
     document.getElementById("counter").textContent = formatTime(setedNumber);
     document.title = formatTime(setedNumber);
-    if (0 <= setedNumber && !inBreak) {
-      localStorage.setItem("totalTime", ++lastTotalTime);
-      totalTimeP.textContent = `Totale time : ${formatTime(
-        localStorage.getItem("totalTime") || 0
-      )} `;
-      if (localStorage.getItem(now())) {
-        totalTimeToday = localStorage.getItem(now());
-        localStorage.setItem(now(), ++totalTimeToday);
-        todayTotalTimeP.textContent = `${formatTime(
-          localStorage.getItem(now()) || 0
-        )}/day`;
-      } else {
-        totalTimeToday = 0;
-        localStorage.setItem(now(), ++totalTimeToday);
-        todayTotalTimeP.textContent = `${formatTime(
-          localStorage.getItem(now()) || 0
-        )}/day`;
-      }
+
+    // 作業中のときだけ累計を増やす
+    if (setedNumber >= 0 && !inBreak) {
+      // ---- totalTime の更新 ----
+      lastTotalTime = Number(lastTotalTime) + diff;
+      localStorage.setItem("totalTime", String(lastTotalTime));
+      totalTimeP.textContent = `Totale time : ${formatTime(lastTotalTime)} `;
+
+      // ---- 今日の日付キー ----
+      const key = nowDate();
+
+      // ---- 今日の totalTimeToday の更新 ----
+      totalTimeToday = Number(localStorage.getItem(key) || 0);
+      totalTimeToday += diff;
+      localStorage.setItem(key, String(totalTimeToday));
+
+      todayTotalTimeP.textContent = `${formatTime(totalTimeToday)}/day`;
     }
+
+    // タイマー終了
     if (setedNumber <= 0) {
       clearInterval(t);
       isTimerWorking = false;
 
-      // ===== 終了した瞬間にアラーム再生 & 通知 =====
       alarm.loop = true;
       alarm.currentTime = 0;
       alarm.play();
 
       if (inBreak) {
-        // 休憩が終わった → 次は作業
         sendNotification("休憩が終わりました！作業を再開しましょう。");
       } else {
-        // 作業が終わった → 次は休憩
         sendNotification("作業が終わりました！休憩しましょう。");
       }
     }
-  }, 1000);
+  }, 200);
+}
+
+// 日付フォーマットの関数（元のままだと now() と名前が被るので nowDate に）
+function nowDate() {
+  return new Date().toLocaleDateString("ja-JP");
 }
 
 // ===============================
