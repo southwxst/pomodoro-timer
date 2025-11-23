@@ -157,6 +157,8 @@ function stopTimer() {
 }
 function stopTimerIfInBreak() {
   inBreak = false;
+  alarm.pause();
+  alarm.currentTime = 0;
   setedNumber = workTime;
   updateDisplayMode();
   document.getElementById("counter").textContent = formatTime(setedNumber);
